@@ -1,0 +1,40 @@
+import csv
+from datetime import datetime, timedelta
+
+def analyze_employee_schedule(file_path):
+    # Assuming the file contains columns: "EmployeeName", "Date", "StartTime", "EndTime", "Position"
+    # Assuming the file is well-formatted and doesn't contain errors
+    with open(file_path, 'r') as file:
+        reader = csv.DictReader(file)
+        employee_shifts = {}  # Dictionary to store employee shifts
+
+        for row in reader:
+            employee = row["EmployeeName"]
+            date = datetime.strptime(row["Date"], '%Y-%m-%d')
+            start_time = datetime.strptime(row["StartTime"], '%H:%M')
+            end_time = datetime.strptime(row["EndTime"], '%H:%M')
+            position = row["Position"]
+
+            if employee not in employee_shifts:
+                employee_shifts[employee] = []
+
+            employee_shifts[employee].append((date, start_time, end_time, position))
+
+    # Analyze shifts
+    for employee, shifts in employee_shifts.items():
+        for i in range(len(shifts) - 1):
+            current_shift = shifts[i]
+            next_shift = shifts[i + 1]
+
+            time_between_shifts = (next_shift[0] - current_shift[2]).total_seconds() / 3600  # in hours
+
+            if 1 < time_between_shifts < 10:
+                consecutive_days = (next_shift[0] - current_shift[0]).days
+                if consecutive_days == 1:
+                    total_hours = (next_shift[2] - current_shift[1]).total_seconds() / 3600
+                    if total_hours > 14:
+                        print(f"Employee: {employee}, Position: {current_shift[3]}")
+
+# Replace 'file_path' with the actual path to your file
+file_path = 'path/to/your/file.csv'
+analyze_employee_schedule(file_path)
